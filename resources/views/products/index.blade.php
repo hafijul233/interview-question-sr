@@ -8,10 +8,12 @@
 
 
     <div class="card">
+
         <form action="{{ route('product.index') }}" method="get" class="card-header">
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
-                    <input type="text" name="title" placeholder="Product Title" class="form-control">
+                    <input type="text" name="title" placeholder="Product Title" class="form-control"
+                           value="{{ old('title') }}">
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="product-variant" class="form-control">
@@ -24,7 +26,8 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text">Price Range</span>
                         </div>
-                        <input type="text" name="price_from" aria-label="First name" placeholder="From" class="form-control">
+                        <input type="text" name="price_from" aria-label="First name" placeholder="From"
+                               class="form-control">
                         <input type="text" name="price_to" aria-label="Last name" placeholder="To" class="form-control">
                     </div>
                 </div>
@@ -36,7 +39,17 @@
                 </div>
             </div>
         </form>
-
+        <div class="card-header">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </div>
         <div class="card-body">
             <div class="table-response">
                 <table class="table">
@@ -49,35 +62,62 @@
                         <th width="150px">Action</th>
                     </tr>
                     </thead>
-
                     <tbody>
+                    @forelse($productPaginated as $product)
+                        <tr>
+                            <td>{{ $product->id ?? '' }}</td>
+                            <td>{{ $product->title ?? '' }}
+                                <br> Created at : {{ $product->created_at->diffForHumans() ?? 'N/A' }}
+                            </td>
+                            <td width="45%">
 
-                    <tr>
-                        <td>1</td>
-                        <td>T-Shirt <br> Created at : 25-Aug-2020</td>
-                        <td>Quality product in low cost</td>
-                        <td>
-                            <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
+                                {{ $product->description ?? '' }}
+                            </td>
+                            <td>
+                                @forelse($product->productVariantPrices as $productVariantPrice)
+                                    <dl class="row mb-0" style="height: 80px; overflow: hidden;" id="variant">
+                                        <dt class="col-sm-3 pb-0">
+                                            @if($productVariantPrice->variantOne != null)
+                                                {{ $productVariantPrice->variantOne->variant }} /
+                                            @endif
 
-                                <dt class="col-sm-3 pb-0">
-                                    SM/ Red/ V-Nick
-                                </dt>
-                                <dd class="col-sm-9">
-                                    <dl class="row mb-0">
-                                        <dt class="col-sm-4 pb-0">Price : {{ number_format(200,2) }}</dt>
-                                        <dd class="col-sm-8 pb-0">InStock : {{ number_format(50,2) }}</dd>
+                                            @if($productVariantPrice->variantTwo != null)
+                                                {{ $productVariantPrice->variantTwo->variant }} /
+                                            @endif
+
+                                            @if($productVariantPrice->variantThree != null)
+                                                {{ $productVariantPrice->variantThree->variant }}
+                                            @endif
+                                        </dt>
+                                        <dd class="col-sm-9">
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-4 pb-0">Price
+                                                    : {{ number_format($productVariantPrice->price,2) }}</dt>
+                                                <dd class="col-sm-8 pb-0">InStock
+                                                    : {{ number_format($productVariantPrice->stock,2) }}</dd>
+                                            </dl>
+                                        </dd>
                                     </dl>
-                                </dd>
-                            </dl>
-                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
-                            </div>
-                        </td>
-                    </tr>
-
+                                @empty
+                                    <p>No Data Available</p>
+                                @endforelse
+                                <button
+                                    onclick="$('#variant').toggleClass('h-auto')"
+                                    class="btn btn-sm btn-link">
+                                    Show more
+                                </button>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">No Product Data Available</td>
+                        </tr>
+                    @endforelse
                     </tbody>
 
                 </table>
@@ -90,8 +130,8 @@
                 <div class="col-md-6">
                     <p>Showing 1 to 10 out of 100</p>
                 </div>
-                <div class="col-md-2">
-
+                <div class="col-md-6 d-flex justify-content-end">
+                    {{ $productPaginated->links() }}
                 </div>
             </div>
         </div>
