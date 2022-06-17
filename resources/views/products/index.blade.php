@@ -73,16 +73,16 @@
 
                                 {{ $product->description ?? '' }}
                             </td>
-                            <td>
+                            <td style="height: 80px; overflow: hidden;" id="variant">
                                 @forelse($product->productVariantPrices as $productVariantPrice)
-                                    <dl class="row mb-0" style="height: 80px; overflow: hidden;" id="variant">
+                                    <dl class="row mb-0">
                                         <dt class="col-sm-3 pb-0">
                                             @if($productVariantPrice->variantOne != null)
-                                                {{ $productVariantPrice->variantOne->variant }} /
+                                                {{ $productVariantPrice->variantOne->variant }}/
                                             @endif
 
                                             @if($productVariantPrice->variantTwo != null)
-                                                {{ $productVariantPrice->variantTwo->variant }} /
+                                                {{ $productVariantPrice->variantTwo->variant }}/
                                             @endif
 
                                             @if($productVariantPrice->variantThree != null)
@@ -126,14 +126,7 @@
         </div>
 
         <div class="card-footer">
-            <div class="row justify-content-between">
-                <div class="col-md-6">
-                    <p>Showing 1 to 10 out of 100</p>
-                </div>
-                <div class="col-md-6 d-flex justify-content-end">
-                    {{ $productPaginated->links() }}
-                </div>
-            </div>
+            {{ $productPaginated->withQueryString()->links() }}
         </div>
     </div>
 
