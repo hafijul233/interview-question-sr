@@ -49,7 +49,8 @@
                             </div>
                             <div class="col-md-8">
                                 <div class="form-group">
-                                    <label v-if="product_variant.length != 1" @click="product_variant.splice(index,1); checkVariant"
+                                    <label v-if="product_variant.length != 1"
+                                           @click="product_variant.splice(index,1); checkVariant"
                                            class="float-right text-primary"
                                            style="cursor: pointer;">Remove</label>
                                     <label v-else for="">.</label>
@@ -58,7 +59,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer" v-if="product_variant.length < variants.length && product_variant.length < 3">
+                    <div class="card-footer"
+                         v-if="product_variant.length < variants.length && product_variant.length < variants.length">
                         <button @click="newVariant" class="btn btn-primary">Add another option</button>
                     </div>
 
@@ -139,8 +141,8 @@ export default {
             let all_variants = this.variants.map(el => el.id)
             let selected_variants = this.product_variant.map(el => el.option);
             let available_variants = all_variants.filter(entry1 => !selected_variants.some(entry2 => entry1 == entry2))
-            // console.log(available_variants)
 
+            //create new variant option
             this.product_variant.push({
                 option: available_variants[0],
                 tags: []
@@ -179,26 +181,26 @@ export default {
 
         // store product into database
         saveProduct() {
+
             let product = {
                 title: this.product_name,
                 sku: this.product_sku,
                 description: this.description,
                 product_image: this.images,
                 product_variant: this.product_variant,
+                tags: [],
                 product_variant_prices: this.product_variant_prices
             }
-
 
             axios.post('/product', product).then(response => {
                 console.log(response.data);
             }).catch(error => {
+                alert("Some Error Occurred");
                 console.log(error);
             })
 
             console.log(product);
-        }
-
-
+        },
     },
     mounted() {
         console.log('Component mounted.')

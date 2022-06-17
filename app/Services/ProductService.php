@@ -5,8 +5,11 @@ namespace App\Services;
 
 
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\ProductVariantPrice;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
@@ -58,9 +61,121 @@ class ProductService
         return $query;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function createProduct(array $inputs = [])
     {
+        $productInfo = $this->formatProductInfo($inputs);
+        $newProduct = $this->product->newInstance($productInfo);
+        DB::beginTransaction();
+        try {
+            $newProduct->save();
+            $inputs['product_id'] = $newProduct->id;
 
+            $productVariantArray = [];
+
+            foreach ($this->formatProductVariantInfo($inputs) as $index => $singleProductVariant):
+                $productVariantArray[$index] = new ProductVariant($singleProductVariant);
+                $productVariantArray[$index]->save();
+            endforeach;
+
+            foreach ($this->formatProductVariantPriceInfo($inputs, $productVariantArray) as $singleProductVariantPrice):
+                    ProductVariantPrice::create($singleProductVariantPrice);
+            endforeach;
+            $newProduct->refresh();
+            DB::commit();
+            return $newProduct;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw new \Exception($exception->getMessage());
+        }
+
+    }
+
+    /**
+     * Format Product Inputs
+     *
+     * @param array $inputs
+     * @return array
+     */
+    private function formatProductInfo(array $inputs = [])
+    {
+        $product['title'] = $inputs['title'] ?? '';
+        $product['sku'] = $inputs['sku'] ?? '';
+        $product['description'] = $inputs['description'] ?? '';
+
+        return $product;
+    }
+
+    /**
+     * Format Product Variant Array Inputs
+     *
+     * @param array $inputs
+     * @return array
+     */
+    private function formatProductVariantInfo(array $inputs = [])
+    {
+        $productVariantArray = [];
+
+        foreach ($inputs['product_variant'] as $input):
+            $parentArr = [
+                'variant_id' => $input['option'],
+                'product_id' => $inputs['product_id'],
+            ];
+
+            foreach ($input['tags'] as $tag)
+                $productVariantArray[] = array_merge($parentArr, [
+                    'variant' => $tag
+                ]);
+
+        endforeach;
+
+        return $productVariantArray;
+    }
+
+    /**
+     * Format Product Variant Array Inputs
+     *
+     * @param array $inputs
+     * @param array $productVariantArray
+     * @return array
+     */
+    private function formatProductVariantPriceInfo(array $inputs, array &$productVariantArray)
+    {
+        $productVariantPriceArray = [];
+
+        $variantFreqArr = [];
+
+        foreach ($productVariantArray as $item):
+            $variantFreqArr[$item->variant] = $item->id;
+        endforeach;
+
+        foreach ($inputs['product_variant_prices'] as $input):
+
+            $parentArr['price'] = $input['price'] ?? 0;
+            $parentArr['stock'] = $input['stock'] ?? 0;
+            $parentArr['product_id'] = $inputs['product_id'] ?? 0;
+
+            $titleArray = explode("/", trim($input['title'], "/"));
+
+            if (isset($titleArray[0])) {
+                $parentArr['product_variant_one'] = $variantFreqArr[$titleArray[0]] ?? null;
+            }
+
+            if (isset($titleArray[1])) {
+                $parentArr['product_variant_two'] = $variantFreqArr[$titleArray[1]] ?? null;
+            }
+
+            if (isset($titleArray[2])) {
+                $parentArr['product_variant_three'] = $variantFreqArr[$titleArray[2]] ?? null;
+            }
+
+            $productVariantPriceArray[] = $parentArr;
+        endforeach;
+
+        Log::info("Data", $productVariantPriceArray);
+        return $productVariantPriceArray;
     }
 
 

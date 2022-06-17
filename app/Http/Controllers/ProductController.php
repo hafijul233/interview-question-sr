@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Product\ProductIndexRequest;
+use App\Http\Requests\Product\ProductStoreRequest;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\ProductService;
@@ -50,12 +51,9 @@ class ProductController extends Controller
         $productPaginated = $this->productService
             ->listProduct($filters)
             ->orderBy('products.id')
-/*            ->toSql();
-        dd($productPaginated);*/
             ->paginate(Constant::ITEM_PER_PAGE);
 
         $variants = $this->variantService->listVariant()->get();
-
 
         return view('products.index', compact('productPaginated', 'variants'));
     }
@@ -74,11 +72,17 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param ProductStoreRequest $productStoreRequest
      * @return JsonResponse
+     * @throws \Exception
      */
-    public function store(Request $request)
+    public function store(ProductStoreRequest $productStoreRequest)
     {
+        $productCreateResponse = $this->productService
+            ->createProduct(
+                $productStoreRequest->validated()
+            );
+        return response()->json($productCreateResponse);
 
     }
 

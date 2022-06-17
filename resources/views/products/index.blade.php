@@ -124,7 +124,7 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
+                                    <a href="{{ route('product.edit', $product->id) }}" class="btn btn-success">Edit</a>
                                 </div>
                             </td>
                         </tr>

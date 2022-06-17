@@ -2012,6 +2012,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 
 
 
@@ -2060,7 +2062,7 @@ __webpack_require__.r(__webpack_exports__);
         return !selected_variants.some(function (entry2) {
           return entry1 == entry2;
         });
-      }); // console.log(available_variants)
+      }); //create new variant option
 
       this.product_variant.push({
         option: available_variants[0],
@@ -2106,11 +2108,13 @@ __webpack_require__.r(__webpack_exports__);
         description: this.description,
         product_image: this.images,
         product_variant: this.product_variant,
+        tags: [],
         product_variant_prices: this.product_variant_prices
       };
       axios.post('/product', product).then(function (response) {
         console.log(response.data);
       })["catch"](function (error) {
+        alert("Some Error Occurred");
         console.log(error);
       });
       console.log(product);
@@ -50680,7 +50684,7 @@ var render = function() {
           ),
           _vm._v(" "),
           _vm.product_variant.length < _vm.variants.length &&
-          _vm.product_variant.length < 3
+          _vm.product_variant.length < _vm.variants.length
             ? _c("div", { staticClass: "card-footer" }, [
                 _c(
                   "button",
