@@ -14,5 +14,5 @@ Showing Pagination detail bottom
 
 ###Task - 3
 Create Length Aware Pagination
-![Pagination](task-2.png)
+![Pagination](task-3.png)
 
