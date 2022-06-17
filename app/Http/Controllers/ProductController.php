@@ -6,6 +6,7 @@ use App\Http\Requests\Product\ProductIndexRequest;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\ProductService;
+use App\Services\VariantService;
 use App\Support\Constant;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -20,14 +21,21 @@ class ProductController extends Controller
      * @var ProductService
      */
     private $productService;
+    /**
+     * @var VariantService
+     */
+    private $variantService;
 
     /**
      * ProductController constructor.
      * @param ProductService $productService
+     * @param VariantService $variantService
      */
-    public function __construct(ProductService $productService)
+    public function __construct(ProductService $productService,
+                                VariantService $variantService)
     {
         $this->productService = $productService;
+        $this->variantService = $variantService;
     }
 
     /**
@@ -38,11 +46,18 @@ class ProductController extends Controller
     public function index(ProductIndexRequest $productIndexRequest)
     {
         $filters = $productIndexRequest->validated();
+
         $productPaginated = $this->productService
             ->listProduct($filters)
+            ->orderBy('products.id')
+/*            ->toSql();
+        dd($productPaginated);*/
             ->paginate(Constant::ITEM_PER_PAGE);
 
-        return view('products.index', compact('productPaginated'));
+        $variants = $this->variantService->listVariant()->get();
+
+
+        return view('products.index', compact('productPaginated', 'variants'));
     }
 
     /**

@@ -13,11 +13,24 @@
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
                     <input type="text" name="title" placeholder="Product Title" class="form-control"
-                           value="{{ old('title') }}">
+                           value="{{ request('title') }}">
                 </div>
                 <div class="col-md-2">
-                    <select name="variant" id="product-variant" class="form-control">
-
+                    <select name="variant" class="form-control">
+                        <option value="" @if(request('variant') == null) selected @endif>
+                            Select a Option
+                        </option>
+                        @foreach($variants as $variant)
+                            <optgroup label="{{ $variant->title ?? '' }}">
+                                @foreach(array_unique($variant->productVariants->pluck('variant')->toArray()) as $variantValue)
+                                    <option
+                                        value="{{ $variantValue ?? '' }}"
+                                        @if($variantValue == request('variant')) selected @endif>
+                                        {{ ucwords($variantValue ?? '') }}
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
                     </select>
                 </div>
 
@@ -27,12 +40,14 @@
                             <span class="input-group-text">Price Range</span>
                         </div>
                         <input type="text" name="price_from" aria-label="First name" placeholder="From"
-                               class="form-control">
-                        <input type="text" name="price_to" aria-label="Last name" placeholder="To" class="form-control">
+                               class="form-control" value="{{ request('price_from') }}">
+                        <input type="text" name="price_to" aria-label="Last name" placeholder="To"
+                               class="form-control" value="{{ request('price_to') }}">
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <input type="date" name="date" placeholder="Date" class="form-control">
+                    <input type="date" name="date" placeholder="Date" class="form-control"
+                           value="{{ request('date') }}">
                 </div>
                 <div class="col-md-1">
                     <button type="submit" class="btn btn-primary float-right"><i class="fa fa-search"></i></button>
@@ -51,7 +66,7 @@
             @endif
         </div>
         <div class="card-body">
-            <div class="table-response">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                     <tr>
@@ -65,7 +80,7 @@
                     <tbody>
                     @forelse($productPaginated as $product)
                         <tr>
-                            <td>{{ $product->id ?? '' }}</td>
+                            <td>{{ $loop->iteration + $productPaginated->firstItem() - 1 }}</td>
                             <td>{{ $product->title ?? '' }}
                                 <br> Created at : {{ $product->created_at->diffForHumans() ?? 'N/A' }}
                             </td>

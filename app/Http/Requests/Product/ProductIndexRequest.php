@@ -25,6 +25,7 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             "title" => ['nullable'],
+            "variant" => ['nullable'],
             "price_from" => ['nullable', 'numeric'],
             "price_to" => ['nullable', 'numeric'],
             "date" => ['nullable', 'date'],
