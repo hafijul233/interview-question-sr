@@ -24,3 +24,7 @@ Create item search using params
 Create item search using params
 ![Pagination](task-5.png)
 
+###Task - 6
+Product crate and update operation added
+![Pagination](task-6.png)
+
