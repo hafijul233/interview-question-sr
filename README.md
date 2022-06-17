@@ -7,7 +7,12 @@ this is a technical assessment task given by employer as technical interview
 ###Task - 1
 Create product list with search parameters
 ![Product List](task-1.png)
+
 ###Task - 2
 Showing Pagination detail bottom
 ![Pagination Detail](task-2.png)
+
+###Task - 3
+Create Length Aware Pagination
+![Pagination](task-2.png)
 
