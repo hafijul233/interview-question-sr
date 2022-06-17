@@ -16,3 +16,7 @@ Showing Pagination detail bottom
 Create Length Aware Pagination
 ![Pagination](task-3.png)
 
+###Task - 4
+Create item search using params
+![Pagination](task-4.png)
+
