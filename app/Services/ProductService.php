@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -62,7 +63,7 @@ class ProductService
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function createProduct(array $inputs = [])
     {
@@ -81,14 +82,14 @@ class ProductService
             endforeach;
 
             foreach ($this->formatProductVariantPriceInfo($inputs, $productVariantArray) as $singleProductVariantPrice):
-                    ProductVariantPrice::create($singleProductVariantPrice);
+                ProductVariantPrice::create($singleProductVariantPrice);
             endforeach;
             $newProduct->refresh();
             DB::commit();
             return $newProduct;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             DB::rollBack();
-            throw new \Exception($exception->getMessage());
+            throw new Exception($exception->getMessage());
         }
 
     }
@@ -178,15 +179,71 @@ class ProductService
         return $productVariantPriceArray;
     }
 
-
-    public function showProductById(array $inputs = [])
+    /**
+     * @throws Exception
+     */
+    public function showProductById($id)
     {
-
+        try {
+            return $this->product::with([
+                'productVariants',
+                'productImages',
+                'productVariantPrices',
+                'productVariantPrices.variantOne',
+                'productVariantPrices.variantTwo',
+                'productVariantPrices.variantThree'
+            ])->findOrFail($id);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
+        }
     }
 
-    public function updateProduct(array $inputs = [])
+    /**
+     * @param $id
+     * @param array $inputs
+     * @return mixed
+     * @throws Exception
+     */
+    public function updateProduct($id, array $inputs = [])
     {
+        $productInfo = $this->formatProductInfo($inputs);
+        $existingProduct = $this->showProductById($id);
+        $existingProduct->fill($productInfo);
+        DB::beginTransaction();
+        try {
+            $existingProduct->save();
+            //
+            $inputs['product_id'] = $existingProduct->id;
 
+            $this->removeOldVariants($existingProduct);
+
+            $productVariantArray = [];
+
+            foreach ($this->formatProductVariantInfo($inputs) as $index => $singleProductVariant):
+                $productVariantArray[$index] = new ProductVariant($singleProductVariant);
+                $productVariantArray[$index]->save();
+            endforeach;
+
+            foreach ($this->formatProductVariantPriceInfo($inputs, $productVariantArray) as $singleProductVariantPrice):
+                ProductVariantPrice::create($singleProductVariantPrice);
+            endforeach;
+            $existingProduct->refresh();
+            DB::commit();
+            return $existingProduct;
+        } catch (Exception $exception) {
+            DB::rollBack();
+            throw new Exception($exception->getMessage());
+        }
     }
 
+    private function removeOldVariants($product)
+    {
+        foreach ($product->productVariantPrices as $temp) :
+            $temp->delete();
+        endforeach;
+
+        foreach ($product->productVariants as $temp) :
+            $temp->delete();
+        endforeach;
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Product\ProductIndexRequest;
 use App\Http\Requests\Product\ProductStoreRequest;
+use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\ProductService;
@@ -90,42 +91,52 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param \App\Models\Product $product
-     * @return Response
+     * @param Product $product
+     * @return void
+     * @throws \Exception
      */
-    public function show($product)
+    public function show(Product $product)
     {
-
+        $product = $this->productService->showProductById($product->id);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param \App\Models\Product $product
-     * @return Response
+     * @param Product $product
+     * @return Application|Factory|View
+     * @throws \Exception
      */
     public function edit(Product $product)
     {
+        $product = $this->productService->showProductById($product->id);
         $variants = Variant::all();
-        return view('products.edit', compact('variants'));
+        return view('products.edit', compact('variants', 'product'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param \App\Models\Product $product
-     * @return Response
+     * @param ProductUpdateRequest $productUpdateRequest
+     * @param Product $product
+     * @return JsonResponse
+     * @throws \Exception
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductUpdateRequest $productUpdateRequest, Product $product): JsonResponse
     {
-        //
+
+        $productUpdateResponse = $this->productService
+            ->updateProduct(
+                $product->id,
+                $productUpdateRequest->validated()
+            );
+        return response()->json($productUpdateResponse);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\Product $product
+     * @param Product $product
      * @return Response
      */
     public function destroy(Product $product)
